@@ -88,25 +88,47 @@ class TransactionActivities(APIView):
             to_payoff_list = []
             to_receive_list = []
             for i in to_payoff_transactions:
-                transaction_activity_logs = TransactionActivity.objects.filter(
-                    transaction = i
-                )
-                data = i.get_details()
-                data["remaining_amount"] = int(i.requested_amount) - int(sum([i.transaction_amount for i in transaction_activity_logs]))
-                data["account_holder"] = i.account.account_user.username
-                to_payoff_list.append(data)
+                try:
+                    transaction_activity_logs = TransactionActivity.objects.filter(
+                        transaction = i
+                    )
+                    data = {
+                        "transaction_date_time": str(i.transaction_date_time),
+                        "amount": i.requested_amount,
+                        "transaction_id": i.transaction_id
+                    }
+                    data["remaining_amount"] = int(i.requested_amount) - int(sum([int(j.transaction_amount) for j in transaction_activity_logs]))
+                    data["account_holder"] = i.account.account_user.username
+                    to_payoff_list.append(data)
+                except Exception as e:
+                    print(e)
+                    return Response({
+                        "message": "Sorry bhaisahaab, gaand fatt rhi hai"
+                    }, status=status.HTTP_400_BAD_REQUEST)
             for i in to_receive_transactions:
-                transaction_activity_logs = TransactionActivity.objects.filter(
-                    transaction = i
-                )
-                data = i.get_details()
-                data["remaining_amount"] = int(i.requested_amount) - int(sum([i.transaction_amount for i in transaction_activity_logs]))
-                data["account_holder"] = i.account.account_user.username
-                to_receive_list.append(data)
-            return Response({
+                try:
+                    transaction_activity_logs = TransactionActivity.objects.filter(
+                        transaction = i
+                    )
+                    data = {
+                        "transaction_date_time": str(i.transaction_date_time),
+                        "amount": i.requested_amount,
+                        "transaction_id": i.transaction_id
+                    }
+                    print(type(i.transaction_date_time))
+                    data["remaining_amount"] = int(i.requested_amount) - int(sum([int(j.transaction_amount) for j in transaction_activity_logs]))
+                    data["account_holder"] = i.account.account_user.username
+                    to_receive_list.append(data)
+                except Exception as e:
+                    print(e)
+                    return Response({
+                        "message": "Sorry bhaisahaab, gaand fatt rhi hai"
+                    }, status=status.HTTP_400_BAD_REQUEST)
+            response_data = {
                 "receive_money": to_receive_list,
                 "send_money": to_payoff_list
-            }, status=HTTP_200_OK)
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({
                 "message": e
@@ -120,13 +142,14 @@ class TransactionActivities(APIView):
                 ),
                 transaction_amount = request.data['amount'],
                 payee = request.user,
-                transaction_activity_identifier = ''.join(random.choices(string.ascii_uppercase + string.digits, k = 32)).upper()
+                transaction_activity_identifier = ''.join(random.choices(string.ascii_uppercase + string.digits, k = 20)).upper()
             )
             details = {
                 "message": "Successful"
             }
             return Response(details, status=status.HTTP_200_OK)
         except Exception as e:
+            print(e)
             return Response({
                 "message": e
             }, status=status.HTTP_400_BAD_REQUEST)
