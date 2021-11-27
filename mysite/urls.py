@@ -30,5 +30,6 @@ urlpatterns = [
     path('accounts/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('accounts/token/', TokenObtainPairView.as_view(), name='token_access'),
     path('accounts/details/', finanace_views.FinanceAccount.as_view(), name='account_details'),
-    path('transaction/', finanace_views.TransactionActivity.as_view(), name='transaction_view'),
+    path('transaction/', finanace_views.TransactionDetail.as_view(), name='transaction_view'),
+    path('transaction/activity/', finanace_views.TransactionActivities.as_view(), name='transaction_view'),
 ]
